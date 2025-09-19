@@ -2,6 +2,7 @@
   "dependencies": {
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "serverless-http": "^4.0.0"
+    "serverless-http": "^4.0.0",
+    "sqlite3": "^5.1.7"
   }
 }
