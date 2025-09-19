@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapCity Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        /* Header */
+        .admin-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-brand img {
+            height: 40px;
+        }
+
+        .admin-brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        /* Main Content */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Stats Dashboard */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.pending h3 { color: #f59e0b; }
+        .stat-card.approved h3 { color: #10b981; }
+        .stat-card.denied h3 { color: #ef4444; }
+        .stat-card.total h3 { color: #3b82f6; }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        /* Reports Grid */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .report-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .report-content {
+            padding: 1.5rem;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .report-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-denied {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .report-details {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4b5563;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: #6b7280;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .approve-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .deny-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .deny-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .view-btn {
+            background: #6b7280;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-container">
+            <div class="admin-brand">
+                <img src="assets/snapcitybg.png" alt="SnapCity Logo">
+                <h1>Admin Panel</h1>
+            </div>
+            <div class="header-actions">
+                <div class="admin-info">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="adminUsername">snapcity</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <!-- Stats Overview -->
+        <section class="stats-overview">
+            <div class="stat-card total">
+                <h3 id="totalReports">0</h3>
+                <p>Total Reports</p>
+            </div>
+            <div class="stat-card pending">
+                <h3 id="pendingReports">0</h3>
+                <p>Pending Approval</p>
+            </div>
+            <div class="stat-card approved">
+                <h3 id="approvedReports">0</h3>
+                <p>Approved</p>
+            </div>
+            <div class="stat-card denied">
+                <h3 id="deniedReports">0</h3>
+                <p>Denied</p>
+            </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="statusFilter">Status:</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Reports</option>
+                        <option value="pending" selected>Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="denied">Denied</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="categoryFilter">Category:</label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="roads">Road Issues</option>
+                        <option value="water">Water & Drainage</option>
+                        <option value="lighting">Street Lighting</option>
+                        <option value="waste">Waste Management</option>
+                        <option value="parks">Parks & Recreation</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
+            </div>
+        </section>
+
+        <!-- Reports Grid -->
+        <section id="reportsContainer">
+            <div class="loading" id="loadingIndicator">Loading reports...</div>
+            <div class="reports-grid" id="reportsGrid"></div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"/>
+                </svg>
+                <h3>No reports found</h3>
+                <p>No reports match your current filter criteria.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for detailed view -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Report Details</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND = ''; // Empty string for relative paths
+        let allReports = [];
+        let filteredReports = [];
+
+        // Check authentication on page load
+        if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = 'admin-login.html';
+        }
+
+        // Mock data for demonstration (replace with actual backend calls)
+        const mockReports = [
+            {
+                id: 1,
+                title: "Broken streetlight on Main Street",
+                description: "The streetlight has been out for several days, making it dangerous for pedestrians at night.",
+                category: "lighting",
+                priority: "high",
+                location: "Main Street, Downtown",
+                status: "pending",
+                image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&h=200&fit=crop&crop=center",
+                created_at: new Date().toISOString(),
+                user_id: "user123"
+            },
+            {
+                id: 2,
+                title: "Pothole on Oak Avenue",
+                description: "Large pothole causing vehicle damage. Needs immediate repair.",
+                category: "roads",
+                priority: "urgent",
+                location: "Oak Avenue, Sector 12",
+                status: "approved",
+                image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=200&fit=crop&crop=center",
+                created_at: new Date(Date.now() - 86400000).toISOString(),
+                user_id: "user456"
+            },
+            {
+                id: 3,
+                title: "Garbage overflow at bus stop",
+                description: "Waste bin is overflowing, creating unsanitary conditions.",
+                category: "waste",
+                priority: "medium",
+                location: "Bus Stop 15, Green Park",
+                status: "denied",
+                image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=200&fit=crop&crop=center",
+                created_at: new Date(Date.now() - 172800000).toISOString(),
+                user_id: "user789"
+            }
+        ];
+
+        // Initialize the admin panel
+        async function initializeAdminPanel() {
+            try {
+                // In a real application, you would fetch from your backend
+                // const response = await fetch(`${BACKEND}/admin/reports`);
+                // allReports = await response.json();
+                
+                // Using mock data for demonstration
+                allReports = mockReports;
+                updateStats();
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                document.getElementById('loadingIndicator').textContent = 'Error loading reports';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allReports.length;
+            const pending = allReports.filter(r => r.status === 'pending').length;
+            const approved = allReports.filter(r => r.status === 'approved').length;
+            const denied = allReports.filter(r => r.status === 'denied').length;
+
+            document.getElementById('totalReports').textContent = total;
+            document.getElementById('pendingReports').textContent = pending;
+            document.getElementById('approvedReports').textContent = approved;
+            document.getElementById('deniedReports').textContent = denied;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            filteredReports = allReports.filter(report => {
+                const statusMatch = statusFilter === 'all' || report.status === statusFilter;
+                const categoryMatch = categoryFilter === 'all' || report.category === categoryFilter;
+                return statusMatch && categoryMatch;
+            });
+
+            renderReports();
+        }
+
+        // Render reports grid
+        function renderReports() {
+            const grid = document.getElementById('reportsGrid');
+            const loading = document.getElementById('loadingIndicator');
+            const emptyState = document.getElementById('emptyState');
+
+            loading.style.display = 'none';
+
+            if (filteredReports.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.style.display = 'grid';
+            
+            grid.innerHTML = filteredReports.map(report => `
+                <div class="report-card">
+                    <img src="${report.image}" alt="${report.title}" class="report-image">
+                    <div class="report-content">
+                        <div class="report-header">
+                            <div class="report-title">${report.title}</div>
+                            <span class="status-badge status-${report.status}">
+                                ${report.status}
+                            </span>
+                        </div>
+                        
+                        <div class="report-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Category:</span>
+                                <span class="detail-value">${formatCategory(report.category)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Priority:</span>
+                                <span class="detail-value">${report.priority}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Location:</span>
+                                <span class="detail-value">${report.location}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Date:</span>
+                                <span class="detail-value">${new Date(report.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            ${report.status === 'pending' ? `
+                                <button class="action-btn approve-btn" onclick="approveReport(${report.id})">
+                                    ✓ Approve
+                                </button>
+                                <button class="action-btn deny-btn" onclick="denyReport(${report.id})">
+                                    ✗ Deny
+                                </button>
+                            ` : ''}
+                            <button class="action-btn view-btn" onclick="viewReport(${report.id})">
+                                👁 View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Format category display
+        function formatCategory(category) {
+            const categories = {
+                'roads': 'Road Issues',
+                'water': 'Water & Drainage',
+                'lighting': 'Street Lighting',
+                'waste': 'Waste Management',
+                'parks': 'Parks & Recreation',
+                'other': 'Other'
+            };
+            return categories[category] || category;
+        }
+
+        // Approve report
+        async function approveReport(reportId) {
+            try {
+                // In real application:
+                // await fetch(`${BACKEND}/admin/reports/${reportId}/approve`, { method: '

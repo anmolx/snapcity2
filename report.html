@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report a Civic Issue</title>
+  <link rel="stylesheet" href="style2.css" />
+</head>
+<body>
+  <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/snapcitybg.png" alt="SnapCity Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="report.html">Report Issue</a></li>
+                <li><a href="map.html">View Map</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="help.html">FAQ</a></li>
+            </ul>
+            <a href="report.html" class="report-btn">Report Issue</a>
+        </div>
+    </nav>
+
+  <div class="main-container">
+    <div class="header-section">
+      <h1>Report a Civic Issue</h1>
+      <p>
+        Help improve your community by reporting infrastructure problems.<br>
+        Our system will automatically route your report to the appropriate authorities.
+      </p>
+    </div>
+
+    <div class="form-container">
+      <div class="form-title">
+        <svg class="camera-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 
+          002 2h12a2 2 0 002-2V5a2 2 0 
+          00-2-2H4zm12 12H4l4-8 3 6 2-4 
+          3 6z" clip-rule="evenodd" />
+        </svg>
+        Report a Civic Issue
+      </div>
+
+      <form id="reportForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label>Photo Evidence</label>
+          <div class="upload-area" id="uploadArea">
+            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M7 16a4 4 0 01-.88-7.903A5 5 
+              0 1115.9 6L16 6a5 5 0 011 9.9M15 
+              13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <div class="upload-text">
+              Drag and drop an image here, or <span class="browse">browse</span>
+            </div>
+          </div>
+          <input type="file" id="photoInput" name="image" accept="image/*" style="display: none;" required>
+        </div>
+
+        <div class="form-group">
+          <label>Issue Title <span class="required">*</span></label>
+          <input type="text" class="form-input" name="title" placeholder="Brief description of the issue" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description <span class="required">*</span></label>
+          <textarea class="form-textarea" name="description" placeholder="Detailed description of the issue" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Category <span class="required">*</span></label>
+          <select class="form-select" name="category" required>
+            <option value="">Select issue category</option>
+            <option value="roads">Road Issues</option>
+            <option value="water">Water & Drainage</option>
+            <option value="lighting">Street Lighting</option>
+            <option value="waste">Waste Management</option>
+            <option value="parks">Parks & Recreation</option>
+            <option value="parks">Damaged infrastructure</option>
+            
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Priority</label>
+          <select class="form-select" name="priority">
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Location <span class="required">*</span></label>
+          <div class="location-group">
+            <button type="button" class="get-location-btn" id="getLocationBtn">
+              <svg class="location-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" 
+                d="M5.05 4.05a7 7 0 
+                119.9 9.9L10 18.9l-4.95-4.95a7 7 
+                0 010-9.9zM10 11a2 2 0 100-4 
+                2 2 0 000 4z" clip-rule="evenodd"/>
+              </svg>
+              Get Current Location
+            </button>
+            <input type="text" class="form-input" id="locationInput" name="location" placeholder="Street address" required>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Report</button>
+      </form>
+    </div>
+  </div>
+
+  <script> 
+
+
+
+// IMAGE UPLOAD
+document.getElementById('uploadArea').addEventListener('click', () => {
+  document.getElementById('photoInput').click();
+});
+
+document.getElementById('photoInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.innerHTML = `
+      <div style="color: #059669; font-weight: 500;">
+        📷 ${file.name} selected
+      </div>
+      <div style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">
+        Click to change photo
+      </div>
+    `;
+  }
+});
+
+// GET LOCATION
+document.getElementById('getLocationBtn').addEventListener('click', () => {
+  const locationInput = document.getElementById('locationInput');
+  const btn = document.getElementById('getLocationBtn');
+
+  if (navigator.geolocation) {
+    btn.innerHTML = "Getting location...";
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+          .then(response => response.json())
+          .then(data => {
+            const address = data.locality ? 
+              `${data.locality}, ${data.principalSubdivision}, ${data.countryName}` : 
+              `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            locationInput.value = address;
+            btn.innerHTML = "✓ Location Captured";
+            btn.style.backgroundColor = "#dcfce7";
+            btn.style.color = "#166534";
+          })
+          .catch(() => {
+            locationInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            btn.innerHTML = "✓ Location Captured";
+          })
+          .finally(() => {
+            btn.disabled = false;
+          });
+      },
+      function() {
+        alert("Unable to retrieve location. Please enter manually.");
+        btn.innerHTML = "Get Current Location";
+        btn.disabled = false;
+      }
+    );
+  } else {
+    alert("Geolocation is not supported by this browser.");
+  }
+});
+
+// FORM SUBMIT + TICKET GENERATION
+document.getElementById('reportForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  // Generate a random ticket ID (e.g., TKT-20250919-XXXX)
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const randomPart = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+
+  const ticketID = `TKT-${yyyy}${mm}${dd}-${randomPart}`;
+
+  alert(`Report submitted successfully!\nYour Ticket ID: ${ticketID}`);
+});
+
+
+
+    const BACKEND = ''; // Empty string for relative paths
+
+    // handle form submit
+    document.getElementById("reportForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        const res = await fetch(`${BACKEND}/upload`, {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) throw new Error(await res.text());
+
+        alert("Report submitted successfully!");
+        e.target.reset();
+      } catch (err) {
+        console.error("Error submitting report:", err);
+        alert("Failed to submit report");
+      }
+    });
+
+    // handle location button
+    document.getElementById("getLocationBtn").addEventListener("click", () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          document.getElementById("locationInput").value =
+            `Lat: ${pos.coords.latitude}, Lng: ${pos.coords.longitude}`;
+        });
+      } else {
+        alert("Geolocation not supported by your browser.");
+      }
+    });
+  </script>
+</body>
+</html>

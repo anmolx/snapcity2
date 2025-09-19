@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Map - Civic Issue Tracker</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <style>
+       * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #f8f9fa;
+}
+
+/* --- NAVIGATION --- */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+    .logo img {
+      height: 50px; /* Adjust logo size */
+    }
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #666;
+    font-weight: 1000;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #7c3aed;
+}
+
+.report-btn {
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.report-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+}
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .map-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .map-icon {
+            width: 20px;
+            height: 20px;
+            fill: #64748b;
+        }
+
+        #map {
+            width: 100%;
+            height: 450px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .map-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .control-btn.active {
+            background: #8b5cf6;
+            color: white;
+            border-color: #8b5cf6;
+        }
+
+        .issues-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .no-issues {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
+
+        .no-issues-icon {
+            width: 48px;
+            height: 48px;
+            fill: #cbd5e1;
+            margin: 0 auto 1rem;
+        }
+
+        .issue-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .issue-item:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+        }
+
+        .issue-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-open {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-resolved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .location-info {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e2e8f0;
+            min-width: 200px;
+            display: none;
+        }
+
+        .location-info.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem 0;
+                gap: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .map-controls {
+                justify-content: center;
+            }
+
+            .location-info {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+                min-width: auto;
+            }
+        }
+
+        .popup-content {
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .popup-description {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .popup-btn {
+            background: #8b5cf6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .popup-btn:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/snapcitybg.png" alt="SnapCity Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="report.html">Report Issue</a></li>
+                <li><a href="map.html">View Map</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="help.html">FAQ</a></li>
+            </ul>
+            <a href="report.html" class="report-btn">Report Issue</a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="page-header">
+            <h1 class="page-title">Issue Map</h1>
+            <p class="page-subtitle">
+                Explore reported civic issues in your area. Click on markers to view details and track resolution progress.
+            </p>
+        </div>
+
+        <section class="map-section">
+            <div class="map-header">
+                <svg class="map-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                </svg>
+                Interactive Map
+            </div>
+            <div id="map"></div>
+            <div class="map-controls">
+                <button class="control-btn active" onclick="toggleIssueType(this, 'all')">All Issues</button>
+                <button class="control-btn" onclick="toggleCurrentLocation(this)">My Location</button>
+            </div>
+        </section>
+
+        <section class="issues-section">
+            <h2 class="section-title">Recent Issues</h2>
+            <div class="no-issues">
+                <svg class="no-issues-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <p><strong>Interactive map will be displayed here</strong></p>
+                <p>Showing 0 reported issues</p>
+            </div>
+            <div id="issues-list" style="display: none;">
+                <!-- Dynamic issues will be populated here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="location-info" class="location-info">
+        <strong>Current Location:</strong>
+        <div id="location-text">Detecting location...</div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
+    <script>
+        // Initialize the map
+        let map;
+        let currentLocationMarker;
+        let issueMarkers = [];
+        let currentFilter = 'all';
+        
+        // Sample issue data
+        const sampleIssues = [
+            {
+                id: 1,
+                type: 'Drainage',
+                title: 'Clogged drainage',
+                description: 'Clogged drainage at sarovar',
+                lat: 28.419351,
+                lng: 77.523071,
+                status: 'open',
+                reportedDate: '2025-09-19'
+            },
+            
+       
+        ];
+
+        function initMap() {
+            // Initialize map centered on Greater Noida, Uttar Pradesh
+            map = L.map('map').setView([28.419351, 77.523071], 13);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+            }).addTo(map);
+
+            // Add scale control
+            L.control.scale({imperial: false, metric: true}).addTo(map);
+
+            // Load sample issues
+            loadIssueMarkers();
+
+            // Try to get user's location
+            getCurrentLocation();
+
+            // Update the no-issues section
+            updateIssuesList();
+        }
+
+        function loadIssueMarkers() {
+            // Clear existing markers
+            issueMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            issueMarkers = [];
+
+            // Filter issues based on current filter
+            const filteredIssues = currentFilter === 'all' 
+                ? sampleIssues 
+                : sampleIssues.filter(issue => issue.type === currentFilter);
+
+            // Add markers for each issue
+            filteredIssues.forEach(issue => {
+                const marker = createIssueMarker(issue);
+                marker.addTo(map);
+                issueMarkers.push(marker);
+            });
+        }
+
+        function createIssueMarker(issue) {
+            // Choose icon color based on status
+            const iconColor = {
+                'open': '#ef4444',
+                'in-progress': '#3b82f6',
+                'resolved': '#10b981'
+            }[issue.status];
+
+            // Create custom icon
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    width: 25px;
+                    height: 25px;
+                    border-radius: 50%;
+                    background: ${iconColor};
+                    border: 3px solid white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                "></div>`,
+                iconSize: [25, 25],
+                iconAnchor: [12, 12]
+            });
+
+            const marker = L.marker([issue.lat, issue.lng], { icon });
+
+            // Create popup content
+            const popupContent = `
+                <div class="popup-content">
+                    <div class="popup-title">${issue.title}</div>
+                    <div class="popup-description">${issue.description}</div>
+                    <div style="margin-bottom: 1rem;">
+                        <span class="issue-status status-${issue.status}">${issue.status.replace('-', ' ')}</span>
+                    </div>
+                    <button class="popup-btn" onclick="viewIssueDetails(${issue.id})">View Details</button>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+            return marker;
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        // Update map view to user location
+                        map.setView([lat, lng], 15);
+                        
+                        // Add current location marker
+                        if (currentLocationMarker) {
+                            map.removeLayer(currentLocationMarker);
+                        }
+                        
+                        currentLocationMarker = L.marker([lat, lng], {
+                            icon: L.divIcon({
+                                className: 'current-location-marker',
+                                html: `<div style="
+                                    width: 20px;
+                                    height: 20px;
+                                    border-radius: 50%;
+                                    background: #8b5cf6;
+                                    border: 4px solid white;
+                                    box-shadow: 0 0 0 2px #8b5cf6, 0 2px 4px rgba(0,0,0,0.3);
+                                "></div>`,
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).addTo(map);
+                        
+                        currentLocationMarker.bindPopup('<strong>Your Location</strong>');
+                        
+                        // Show location info
+                        showLocationInfo(lat, lng);
+                    },
+                    (error) => {
+                        console.log('Geolocation error:', error);
+                        // Keep default location (Greater Noida)
+                        showLocationInfo(28.5945, 77.2748, false);
+                    }
+                );
+            } else {
+                // Keep default location
+                showLocationInfo(28.5945, 77.2748, false);
+            }
+        }
+
+        function showLocationInfo(lat, lng, isUserLocation = true) {
+            const locationInfo = document.getElementById('location-info');
+            const locationText = document.getElementById('location-text');
+            
+            const locationName = isUserLocation ? 'Your current area' : 'Greater Noida, UP';
+            locationText.innerHTML = `
+                ${locationName}<br>
+                <small style="color: #64748b;">${lat.toFixed(4)}, ${lng.toFixed(4)}</small>
+            `;
+            
+            locationInfo.classList.add('show');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                locationInfo.classList.remove('show');
+            }, 5000);
+        }
+
+        function toggleIssueType(button, type) {
+            // Update active button
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                if (btn !== button || type === 'location') {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            if (type !== 'location') {
+                button.classList.add('active');
+                currentFilter = type;
+                loadIssueMarkers();
+                updateIssuesList();
+            }
+        }
+
+        function toggleCurrentLocation(button) {
+            getCurrentLocation();
+            // Don't keep this button active
+            setTimeout(() => button.classList.remove('active'), 500);
+        }
+
+        function updateIssuesList() {
+            const filteredIssues = currentFilter === 'all' 
+                ? sampleIssues 
+                : sampleIssues.filter(issue => issue.type === currentFilter);
+
+            const issuesList = document.getElementById('issues-list');
+            const noIssues = document.querySelector('.no-issues');
+
+            if (filteredIssues.length === 0) {
+                issuesList.style.display = 'none';
+                noIssues.style.display = 'block';
+                noIssues.innerHTML = `
+                    <svg class="no-issues-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <p><strong>Interactive map is active</strong></p>
+                    <p>Showing ${filteredIssues.length} reported issues${currentFilter !== 'all' ? ` for ${currentFilter}` : ''}</p>
+                `;
+            } else {
+                noIssues.style.display = 'none';
+                issuesList.style.display = 'block';
+                
+                issuesList.innerHTML = filteredIssues.map(issue => `
+                    <div class="issue-item" onclick="viewIssueOnMap(${issue.id})">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">${issue.title}</h3>
+                            <span class="issue-status status-${issue.status}">${issue.status.replace('-', ' ')}</span>
+                        </div>
+                        <p style="margin: 0 0 0.5rem 0; color: #64748b; font-size: 0.875rem;">${issue.description}</p>
+                        <small style="color: #9ca3af;">Reported: ${new Date(issue.reportedDate).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function viewIssueOnMap(issueId) {
+            const issue = sampleIssues.find(i => i.id === issueId);
+            if (issue) {
+                map.setView([issue.lat, issue.lng], 16);
+                // Find and open the popup for this marker
+                const marker = issueMarkers.find(m => 
+                    m.getLatLng().lat === issue.lat && m.getLatLng().lng === issue.lng
+                );
+                if (marker) {
+                    marker.openPopup();
+                }
+            }
+        }
+
+        function viewIssueDetails(issueId) {
+            alert(`Viewing details for issue #${issueId}`);
+            // In a real app, this would navigate to a detailed view
+        }
+
+        function setActiveNav(element) {
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', initMap);
+    </script>
+</body>
+</html>
